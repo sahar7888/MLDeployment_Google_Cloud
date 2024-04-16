@@ -1,16 +1,49 @@
-# This is a sample Python script.
+from flask import Flask, request
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+import pickle
+"""Create the local App"""
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+app = Flask(__name__)
+
+"""Load the model"""
+model_pk = pickle.load(open("flower-v1.pkl","rb"))
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+@app.route('/api_predict', methods=['POST', 'GET'])
+def api_predict():
+    if request.method == 'GET':
+        return "Please Send POST Request"
+    elif request.method == 'POST':
+
+        print("Hello" + str(request.get_json()))
+
+        data = request.get_json()
+
+        sepal_length = data["sepal_length"]
+        sepal_width = data["sepal_width"]
+        petal_length = data["petal_length"]
+        petal_width = data["petal_width"]
+
+        data = np.array([[sepal_length, sepal_width,
+                          petal_length, petal_width]])
+
+        prediction = model_pk.predict(data)
+        return str(prediction)
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+if __name__ == "__main__":
+    app.run()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+'''    
+import requests
+
+url = 'https://us-central1-optimal-mender-234015.cloudfunctions.net/predict_flower'
+r = requests.post(url, json = {
+	"sepal_length":1,
+	"sepal_width":0.1,
+	"petal_length":0,
+	"petal_width":10
+})
+print(r.text)
+'''
